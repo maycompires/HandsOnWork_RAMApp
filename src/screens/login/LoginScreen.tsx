@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, TextInput, Button, StyleSheet, TouchableOpacity, SafeAreaView } from 'react-native';
+import { View, Text, TextInput, Button, StyleSheet, TouchableOpacity, SafeAreaView, Image } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient'; // Adicionando o LinearGradient para um fundo moderno
 import { NavigationProp } from '@react-navigation/native';
 
@@ -14,6 +14,13 @@ const LoginScreen: React.FC<LoginScreenProps> = ({ navigation }) => {
       style={styles.container}
     >
       <SafeAreaView style={styles.innerContainer}>
+        
+        {/* Logo */}
+        <Image 
+          source={require('../../assets/logo.png')} // Substitua pelo caminho correto da imagem
+          style={styles.logo}
+        />
+
         <Text style={styles.title}>Entre com a sua Conta</Text>
 
         {/* Input de email */}
@@ -61,6 +68,10 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
+  },
+  logo: {
+    width: 300,  // Largura do logo
+    height: 300, // Altura do logo
   },
   title: {
     fontSize: 28,

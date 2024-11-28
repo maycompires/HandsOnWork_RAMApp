@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
-import { View, Text, Button, StyleSheet, TouchableOpacity } from 'react-native';
-import MapView, { Marker, Polygon, PROVIDER_GOOGLE } from 'react-native-maps';
+import { View, Text, TouchableOpacity, StyleSheet, Modal } from 'react-native';
+import MapView, { Marker, PROVIDER_GOOGLE, Circle } from 'react-native-maps';
 import { LinearGradient } from 'expo-linear-gradient'; // Gradiente para o fundo
 
 const MapaScreen: React.FC = () => {
@@ -12,13 +12,18 @@ const MapaScreen: React.FC = () => {
     longitudeDelta: 0.0421,
   };
 
-  // Estado para armazenar os pontos do polígono
-  const [polygonCoordinates, setPolygonCoordinates] = useState<any[]>([]);
+  // Estado para armazenar os pontos dos círculos
+  const [circleCoordinates, setCircleCoordinates] = useState<any[]>([]);
+  // Estado para controlar o modal
+  const [modalVisible, setModalVisible] = useState(false);
+  const [selectedLocation, setSelectedLocation] = useState<any>(null);
 
-  // Função para adicionar coordenadas no polígono
-  const addPolygonPoint = (e: any) => {
+  // Função para adicionar um círculo ao mapa e um pin
+  const addLocation = (e: any) => {
     const newCoordinate = e.nativeEvent.coordinate;
-    setPolygonCoordinates((prev) => [...prev, newCoordinate]);
+    setCircleCoordinates((prev) => [...prev, newCoordinate]);
+    setSelectedLocation(newCoordinate);
+    setModalVisible(true); // Exibe o modal com os dados
   };
 
   return (
@@ -29,32 +34,61 @@ const MapaScreen: React.FC = () => {
       <View style={styles.innerContainer}>
         <Text style={styles.title}>Áreas de Risco</Text>
         <Text style={styles.subtitle}>Locais com Relatos de Incidentes</Text>
-
-        <MapView
-          provider={PROVIDER_GOOGLE}
-          style={styles.map}
-          initialRegion={initialRegion}
-          onPress={addPolygonPoint} // Ao clicar no mapa, ele adiciona um ponto ao polígono
-        >
-          {/* Marker em Florianópolis */}
-          <Marker coordinate={{ latitude: -27.5954, longitude: -48.5480 }} title="Florianópolis" />
-
-          {/* Polígono vermelho, exibindo as coordenadas do usuário */}
-          {polygonCoordinates.length > 2 && (
-            <Polygon
-              coordinates={polygonCoordinates}
-              strokeColor="red"
-              fillColor="rgba(255, 0, 0, 0.3)" // Cor do preenchimento do polígono
-              strokeWidth={2}
-            />
-          )}
-        </MapView>
-
-        {/* Botão para limpar o polígono */}
-        <TouchableOpacity style={styles.clearButton} onPress={() => setPolygonCoordinates([])}>
-          <Text style={styles.clearButtonText}>Limpar Polígono</Text>
-        </TouchableOpacity>
       </View>
+
+      <MapView
+        provider={PROVIDER_GOOGLE}
+        style={styles.map}
+        initialRegion={initialRegion}
+        onPress={addLocation} // Ao clicar no mapa, adiciona um pin e círculo
+      >
+        {/* Círculos para marcações */}
+        {circleCoordinates.map((coordinate, index) => (
+          <Circle
+            key={index}
+            center={coordinate}
+            radius={50} // Raio do círculo
+            strokeColor="blue"
+            fillColor="rgba(0, 0, 255, 0.3)"
+          />
+        ))}
+
+        {/* Pin para a localização clicada */}
+        {selectedLocation && (
+          <Marker coordinate={selectedLocation} title="Local Clicado" />
+        )}
+      </MapView>
+
+      {/* Modal com informações da localização */}
+      <Modal
+        visible={modalVisible}
+        transparent={true}
+        animationType="slide"
+        onRequestClose={() => setModalVisible(false)}
+      >
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalContainer}>
+            <Text style={styles.modalTitle}>Detalhes da Localização</Text>
+            <Text style={styles.modalText}>
+              Latitude: {selectedLocation?.latitude}
+            </Text>
+            <Text style={styles.modalText}>
+              Longitude: {selectedLocation?.longitude}
+            </Text>
+            <TouchableOpacity
+              style={styles.closeButton}
+              onPress={() => setModalVisible(false)}
+            >
+              <Text style={styles.closeButtonText}>Fechar</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
+
+      {/* Botão para limpar os círculos */}
+      <TouchableOpacity style={styles.clearButton} onPress={() => setCircleCoordinates([])}>
+        <Text style={styles.clearButtonText}>Limpar</Text>
+      </TouchableOpacity>
     </LinearGradient>
   );
 };
@@ -62,13 +96,13 @@ const MapaScreen: React.FC = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    paddingTop: 20,
+    paddingTop: 30, // Deixe o topo um pouco mais espaçoso
   },
   innerContainer: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'flex-start',
     padding: 20,
+    alignItems: 'center',
+    justifyContent: 'center',
+    zIndex: 2, // Garantir que o texto fique acima do mapa
   },
   title: {
     fontSize: 28,
@@ -80,26 +114,63 @@ const styles = StyleSheet.create({
   subtitle: {
     fontSize: 16,
     color: '#ddd',
-    marginBottom: 20,
     textAlign: 'center',
+    marginBottom: 20,
   },
   map: {
+    flex: 1, // O mapa ocupa o máximo possível de espaço
     width: '100%',
-    height: '70%',
-    marginBottom: 20,
-    borderRadius: 10,
-    borderWidth: 3, // Adicionando a borda ao mapa
-    borderColor: '#fff', // Cor da borda (branca para combinar com o texto)
+    height: '100%',
+    borderRadius: 20, // Cantos arredondados
+    borderWidth: 3, // Largura da borda
+    borderColor: '#FFD700', // Cor da borda (amarelo)
+    marginBottom: 0, // Removendo a margem inferior
   },
   clearButton: {
     backgroundColor: '#e91e63', // Cor vibrante para o botão
     paddingVertical: 12,
-    paddingHorizontal: 30,
+    paddingHorizontal: 20,
     borderRadius: 10,
     alignItems: 'center',
+    justifyContent: 'center',
     marginTop: 20,
+    marginBottom: 20,
   },
   clearButtonText: {
+    fontSize: 18,
+    color: '#fff',
+    fontWeight: 'bold',
+  },
+  modalOverlay: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: 'rgba(0, 0, 0, 0.5)', // Fundo translúcido
+  },
+  modalContainer: {
+    backgroundColor: 'white',
+    padding: 20,
+    borderRadius: 10,
+    width: '80%',
+    alignItems: 'center',
+  },
+  modalTitle: {
+    fontSize: 22,
+    fontWeight: 'bold',
+    marginBottom: 10,
+  },
+  modalText: {
+    fontSize: 18,
+    marginBottom: 10,
+  },
+  closeButton: {
+    backgroundColor: '#4CAF50',
+    paddingVertical: 12,
+    paddingHorizontal: 30,
+    borderRadius: 10,
+    marginTop: 20,
+  },
+  closeButtonText: {
     fontSize: 18,
     color: '#fff',
     fontWeight: 'bold',

@@ -4,7 +4,6 @@ import { NavigationContainer } from '@react-navigation/native';
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons'; // Importando ícones
 
 // Importando as telas
-import HomeScreen from '../screens/homeScreen/HomeScreen';
 import LoginScreen from './../screens/login/LoginScreen';
 import MapaScreen from '../screens/mapaScreen/MapaScreen';
 import ReportIncidentScreen from '../screens/reportIncidentScreen/ReportIncidentScreen';
@@ -16,7 +15,7 @@ const AppNavigator = () => {
   return (
     <NavigationContainer>
       <Tab.Navigator
-        initialRouteName="Home" // Tela inicial
+        initialRouteName="Login" // Agora a tela inicial será a LoginScreen
         screenOptions={{
           tabBarActiveTintColor: '#fff', // Cor ativa dos ícones
           tabBarInactiveTintColor: '#B0B0B0', // Cor inativa dos ícones
@@ -34,16 +33,6 @@ const AppNavigator = () => {
           headerShown: false, // Ocultar cabeçalho
         }}
       >
-        <Tab.Screen 
-          name="Home" 
-          component={HomeScreen} 
-          options={{
-            tabBarLabel: 'Início',
-            tabBarIcon: ({ color, size }) => (
-              <MaterialCommunityIcons name="home" size={size} color={color} />
-            ),
-          }} 
-        />
         <Tab.Screen 
           name="Login" 
           component={LoginScreen} 
